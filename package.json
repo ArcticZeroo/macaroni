@@ -1,0 +1,47 @@
+{
+  "name": "macaroni",
+  "version": "1.0.0",
+  "description": "Operator overloading for JS",
+  "main": "dist/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
+    "babylon": "^6.18.0"
+  },
+  "devDependencies": {
+    "@types/babel-core": "^6.25.6",
+    "@types/babel-traverse": "^6.25.5",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "@types/sinon": "^7.0.10",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "sinon": "^7.3.1"
+  },
+  "scripts": {
+    "test": "mocha",
+    "prepublish": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcticzeroo/macaroni.git"
+  },
+  "keywords": [
+    "operator",
+    "operator",
+    "overloading",
+    "overloading",
+    "overload",
+    "macaroni"
+  ],
+  "author": "spencer@frozor.io",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arcticzeroo/macaroni/issues"
+  },
+  "homepage": "https://github.com/arcticzeroo/macaroni#readme"
+}

@@ -1,8 +1,14 @@
 import { types, template } from 'babel-core';
 import { NodePath } from 'babel-traverse';
 
+
+interface IPluginOptions {
+    importType?: 'require' | 'import';
+}
+
 interface ITransformerState {
     hasTransformedAny: boolean;
+    opts: IPluginOptions;
 }
 
 const expressionStringToOperatorName = {
@@ -18,9 +24,10 @@ function isOperatorSupported(expressionString: string) {
     return expressionStringToOperatorName.hasOwnProperty(expressionString);
 }
 
-export default function babelTransformer() {
-    const importTemplate = template(`const {Operator} = require('macaroni');`, { sourceType: 'module' });
+const requireStatement = `const {Operator} = require('macaroni');`;
+const importStatement = `import {Operator} from 'macaroni'`;
 
+export default function babelTransformer() {
     return {
         visitor: {
             BinaryExpression(path: NodePath<types.BinaryExpression>, state: ITransformerState) {
@@ -47,18 +54,27 @@ export default function babelTransformer() {
             Program: {
                 enter(_, state: ITransformerState) {
                     state.hasTransformedAny = false;
+
+                    if (!state.opts || !state.opts.importType) {
+                        state.opts = {
+                            importType: 'import'
+                        };
+                    }
                 },
                 exit(path: NodePath<types.Program>, state: ITransformerState) {
                     if (!state.hasTransformedAny) {
                         return;
                     }
 
+                    const importTemplate = template(state.opts.importType === 'import' ? importStatement: requireStatement, { sourceType: 'module' });
+
                     const lastImportDeclaration = path.get('body').filter(p => p.isImportDeclaration()).pop();
 
                     if (lastImportDeclaration) {
                         lastImportDeclaration.insertAfter(importTemplate());
                     } else {
-                        path.insertBefore(importTemplate());
+                        // @ts-ignore
+                        path.unshiftContainer('body', [importTemplate()]);
                     }
                 }
             }

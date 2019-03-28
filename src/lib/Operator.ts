@@ -14,9 +14,9 @@ export default abstract class Operator {
         return type !== 'object' && type !== 'function';
     }
 
-    private static verifyNotNull(item: any) {
+    private static verifyNotNull(item: any): void {
         if (item == null) {
-            throw new TypeError('Item cannot be null');
+            throw new TypeError('Operand cannot be null');
         }
     }
 

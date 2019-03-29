@@ -13,7 +13,23 @@ interface ITransformerState {
 
 const expressionStringToOperatorName = {
     '+': 'add',
-    '-': 'subtract'
+    '-': 'subtract',
+    '*': 'multiply',
+    '**': 'pow',
+    '/': 'divide',
+    '<': 'lessThan',
+    '>': 'greaterThan',
+    '<=': 'lessEqual',
+    '>=': 'greaterEqual',
+    '==': 'unsafeEqual',
+    '===': 'strictEqual',
+    '!=': 'unsafeNotEqual',
+    '!==': 'strictNotEqual',
+    '&': 'logicalAnd',
+    '|': 'logicalOr',
+    '^': 'logicalXor',
+    '<<': 'leftShift',
+    '>>': 'rightShift'
 };
 
 function isFunctionCallUseless(path: NodePath<types.BinaryExpression>) {

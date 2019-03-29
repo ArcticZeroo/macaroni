@@ -99,4 +99,37 @@ describe('Operator', function () {
          expect(returnValue).to.equal(callbackSymbol);
       });
    });
+
+   describe('add', function () {
+      it('adds two primitives as expected', function () {
+         expect(Operator.add(1, 2)).to.equal(3);
+      });
+
+      it('uses the primitive method when the first parameter is a primitive', function () {
+         const testObj = {
+            [Symbol.toPrimitive]() {
+               return 5;
+            }
+         };
+
+         expect(Operator.add(3, testObj)).to.equal(8);
+      });
+
+      it('uses the overloaded method when the first parameter is a class with the method', function () {
+         const addSymbol = Symbol();
+
+         const testObj = {
+            [operators.add]() {
+               return addSymbol;
+            }
+         };
+
+         expect(Operator.add(testObj, 3)).to.equal(addSymbol);
+      });
+
+      it('throws when the first object is null, or does not have the overload', function () {
+         expect(() => Operator.add(null, 3)).to.throw(TypeError);
+         expect(() => Operator.add({}, 3)).to.throw(TypeError);
+      });
+   });
 });

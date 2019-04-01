@@ -17,11 +17,6 @@ const compareInverses: {} = {
     [operators.greaterEqual]: operators.lessThan
 };
 
-const compareCompounds: {} = {
-    [operators.lessEqual]: [operators.lessThan, operators.strictEqual],
-    [operators.greaterEqual]: [operators.greaterThan, operators.strictEqual]
-};
-
 export default abstract class Operator {
     private static isPrimitive(item: any): boolean {
         const type = typeof item;
@@ -65,6 +60,8 @@ export default abstract class Operator {
             return a[operator](b);
         }
 
+        // This is both unnecessary and insufficient at the same time. There's a lot more assumptions that can be
+        // automatically made using equals, etc., but I am currently lazy.
         const inverse = compareInverses[operator];
 
         if (inverse && a[inverse]) {

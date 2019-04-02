@@ -6,6 +6,7 @@ const operatorDisplays: {} = {
     [operators.subtract]: '-',
     [operators.divide]: '/',
     [operators.pow]: '**',
+    [operators.mod]: '%',
     [operators.lessThan]: '<',
     [operators.lessEqual]: '<=',
     [operators.greaterThan]: '>',

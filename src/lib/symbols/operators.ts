@@ -12,6 +12,7 @@ const operators = {
     multiply: createSymbol('Mul'),
     divide: createSymbol('Div'),
     pow: createSymbol('Pow'),
+    mod: createSymbol('Mod'),
     lessThan: createSymbol('Less'),
     lessEqual: createSymbol('LessEq'),
     greaterThan: createSymbol('Greater'),

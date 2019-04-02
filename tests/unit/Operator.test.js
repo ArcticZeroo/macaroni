@@ -1,6 +1,59 @@
 const { Operator, operators } = require('../../dist');
 const { expect } = require('chai');
-const sinon = require('sinon');
+const runTests = require('../helper/dynamicTestRunner');
+
+function twoOperandTests(name, operator) {
+   const operatorMethod = Operator[name];
+   const primitiveMethod = Operator.primitiveMethods[operator];
+
+   describe(name, function () {
+      it(`uses primitive method for two primitives as expected`, function () {
+         expect(operatorMethod(1, 2)).to.equal(primitiveMethod(1, 2));
+      });
+
+      it(`uses the primitive method when the first parameter is a primitive`, function () {
+         const testObj = {
+            [Symbol.toPrimitive]() {
+               return 5;
+            }
+         };
+
+         expect(operatorMethod(3, testObj)).to.equal(primitiveMethod(3, 5));
+      });
+
+      it(`uses the overloaded method when the first parameter is a class with the method`, function () {
+         const addSymbol = Symbol();
+
+         const testObj = {
+            [operator]() {
+               return addSymbol;
+            }
+         };
+
+         expect(operatorMethod(testObj, 3)).to.equal(addSymbol);
+      });
+
+      it(`throws when the first object is null, or does not have the overload`, function () {
+         expect(() => operatorMethod(null, 3)).to.throw(TypeError);
+         expect(() => operatorMethod({}, 3)).to.throw(TypeError);
+      });
+   });
+}
+
+// The boolean operand methods are purposely excluded here
+const twoOperandTestCaseData = [
+   ['add', operators.add],
+   ['subtract', operators.subtract],
+   ['multiply', operators.multiply],
+   ['divide', operators.divide],
+   ['mod', operators.mod],
+   ['pow', operators.pow],
+   ['logicalAnd', operators.logicalAnd],
+   ['logicalOr', operators.logicalOr],
+   ['logicalXor', operators.logicalXor],
+   ['leftShift', operators.leftShift],
+   ['rightShift', operators.rightShift]
+];
 
 describe('Operator', function () {
    describe('isPrimitive', function () {
@@ -50,86 +103,62 @@ describe('Operator', function () {
    });
 
    describe('operateOn', function () {
-      const operateOn = Operator['operateOn'];
+      describe('operateOnTwoOperands', function () {
+         const operateOn = Operator['operateOnTwoOperands'];
 
-      it('throws when the first parameter is missing the overload', function () {
-         class TestClass {}
+         it('throws when the first parameter is missing the overload', function () {
+            class TestClass {}
 
-         expect(() => operateOn(new TestClass(), 2, operators.add)).to.throw(TypeError);
-      });
+            expect(() => operateOn(new TestClass(), 2, operators.add)).to.throw(TypeError);
+         });
 
-      it('returns the result of the overload operation when overloaded', function () {
-         const constantReturn = 5;
+         it('returns the result of the overload operation when overloaded', function () {
+            const constantReturn = 5;
 
-         class TestClass {
-            [operators.add]() {
-               return constantReturn;
+            class TestClass {
+               [operators.add]() {
+                  return constantReturn;
+               }
             }
-         }
 
-         const instance = new TestClass();
+            const instance = new TestClass();
 
-         expect(operateOn(instance, true, operators.add)).to.equal(constantReturn);
-      });
+            expect(operateOn(instance, true, operators.add)).to.equal(constantReturn);
+         });
 
-      it('properly passes the other operand to the overload', function () {
-         const otherValue = Symbol();
+         it('properly passes the other operand to the overload', function () {
+            const otherValue = Symbol();
 
-         class TestClass {
-            [operators.add](other) {
-               expect(other).to.equal(otherValue);
+            class TestClass {
+               [operators.add](other) {
+                  expect(other).to.equal(otherValue);
+               }
             }
-         }
 
-         const instance = new TestClass();
+            const instance = new TestClass();
 
-         operateOn(instance, otherValue, operators.add);
+            operateOn(instance, otherValue, operators.add);
+         });
       });
    });
 
-   describe('defaultOperate', function () {
-      const defaultOperate = Operator['defaultOperate'];
+   describe('defaultOperateTwoOperands', function () {
+      const defaultOperate = Operator['defaultOperateTwoOperands'];
 
       it('uses the primitive callback when both operands are primitive', function () {
-         const callbackSymbol = Symbol();
-         const callback = () => callbackSymbol;
+         const tempPrimitiveMethod = Operator.primitiveMethods[operators.add];
 
-         const returnValue = defaultOperate(1, 2, operators.add, callback);
+         const callbackSymbol = Symbol();
+
+         Operator.primitiveMethods[operators.add] = () => callbackSymbol;
+
+         const returnValue = defaultOperate(1, 2, operators.add);
 
          expect(returnValue).to.equal(callbackSymbol);
+
+         Operator.primitiveMethods[operators.add] = tempPrimitiveMethod;
       });
    });
 
-   describe('add', function () {
-      it('adds two primitives as expected', function () {
-         expect(Operator.add(1, 2)).to.equal(3);
-      });
-
-      it('uses the primitive method when the first parameter is a primitive', function () {
-         const testObj = {
-            [Symbol.toPrimitive]() {
-               return 5;
-            }
-         };
-
-         expect(Operator.add(3, testObj)).to.equal(8);
-      });
-
-      it('uses the overloaded method when the first parameter is a class with the method', function () {
-         const addSymbol = Symbol();
-
-         const testObj = {
-            [operators.add]() {
-               return addSymbol;
-            }
-         };
-
-         expect(Operator.add(testObj, 3)).to.equal(addSymbol);
-      });
-
-      it('throws when the first object is null, or does not have the overload', function () {
-         expect(() => Operator.add(null, 3)).to.throw(TypeError);
-         expect(() => Operator.add({}, 3)).to.throw(TypeError);
-      });
-   });
+   describe('two operand operators (non comparison)', () => runTests(twoOperandTests, twoOperandTestCaseData));
 });

@@ -1,24 +1,3 @@
-import OperatorType from '../enum/OperatorType';
-
-const symbolNames = {
-    [OperatorType.add]: 'Add',
-    [OperatorType.sub]: 'Sub',
-    [OperatorType.mul]: 'Multiply',
-    [OperatorType.div]: 'Divide',
-    [OperatorType.lessThan]: 'LessThan',
-    [OperatorType.lessEqual]: 'LessEqual',
-    [OperatorType.greaterThan]: 'GreaterThan',
-    [OperatorType.greaterEqual]: 'GreaterEqual',
-    [OperatorType.equal]: 'UnsafeEqual',
-    [OperatorType.strictEqual]: 'StrictEqual',
-    [OperatorType.pow]: 'Power',
-    [OperatorType.leftShift]: 'LShift',
-    [OperatorType.rightShift]: 'RShift',
-    [OperatorType.logicalAnd]: 'AND',
-    [OperatorType.logicalOr]: 'OR',
-    [OperatorType.logicalXor]: 'XOR'
-};
-
 function createSymbol(name: string): symbol {
     if (name == null) {
         throw new TypeError('Expected a valid name for operator identifier');
@@ -28,21 +7,28 @@ function createSymbol(name: string): symbol {
 }
 
 const operators = {
-    add: createSymbol(symbolNames[OperatorType.add]),
-    subtract: createSymbol(symbolNames[OperatorType.sub]),
-    multiply: createSymbol(symbolNames[OperatorType.mul]),
-    divide: createSymbol(symbolNames[OperatorType.div]),
-    lessThan: createSymbol(symbolNames[OperatorType.lessThan]),
-    lessEqual: createSymbol(symbolNames[OperatorType.lessEqual]),
-    greaterThan: createSymbol(symbolNames[OperatorType.greaterThan]),
-    greaterEqual: createSymbol(symbolNames[OperatorType.greaterEqual]),
-    unsafeEqual: createSymbol(symbolNames[OperatorType.equal]),
-    strictEqual: createSymbol(symbolNames[OperatorType.strictEqual]),
-    and: createSymbol(symbolNames[OperatorType.logicalAnd]),
-    or: createSymbol(symbolNames[OperatorType.logicalOr]),
-    xor: createSymbol(symbolNames[OperatorType.logicalXor]),
-    leftShift: createSymbol(symbolNames[OperatorType.leftShift]),
-    rightShift: createSymbol(symbolNames[OperatorType.rightShift])
+    add: createSymbol('Add'),
+    subtract: createSymbol('Sub'),
+    multiply: createSymbol('Mul'),
+    divide: createSymbol('Div'),
+    pow: createSymbol('Pow'),
+    lessThan: createSymbol('Less'),
+    lessEqual: createSymbol('LessEq'),
+    greaterThan: createSymbol('Greater'),
+    greaterEqual: createSymbol('GreaterEq'),
+    unsafeEqual: createSymbol('UnsafeEq'),
+    strictEqual: createSymbol('StrictEq'),
+    logicalAnd: createSymbol('LogicalAnd'),
+    logicalOr: createSymbol('LogicalOr'),
+    logicalXor: createSymbol('LogicalXor'),
+    logicalNot: createSymbol('LogicalNot'),
+    leftShift: createSymbol('LShift'),
+    rightShift: createSymbol('RShift'),
+    increment: createSymbol('Increment'),
+    decrement: createSymbol('Decrement'),
+    negate: createSymbol('Negate'),
+    positive: createSymbol('Positive'),
+    not: createSymbol('Not')
 };
 
 export default operators;

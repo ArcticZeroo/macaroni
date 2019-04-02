@@ -121,24 +121,26 @@ export default abstract class Operator {
         throw new TypeError(`No such operator '${operatorDisplays[operator] || '?<unknown>'}' exists for type`)
     }
 
-    private static operateOnTwoOperands(a: any, b: any, operator: symbol): any {
-        const overloaded = a[operator];
+    private static assertOverloadExists(a: any, operator: symbol) {
+        const overload = a[operator];
 
-        if (!overloaded) {
+        if (!overload) {
             Operator.throwNoOverload(operator);
         }
 
-        return overloaded(b);
+        return overload;
+    }
+
+    private static operateOnTwoOperands(a: any, b: any, operator: symbol): any {
+        const overload = Operator.assertOverloadExists(a, operator);
+
+        return overload(b);
     }
 
     private static operateOnOneOperand(a: any, operator: symbol): any {
-        const overloaded = a[operator];
+        const overload = Operator.assertOverloadExists(a, operator);
 
-        if (!overloaded) {
-            Operator.throwNoOverload(operator);
-        }
-
-        return overloaded();
+        return overload();
     }
 
     private static defaultOperateTwoOperands(a: any, b: any, operator: symbol, nonPrimitiveMethod: TwoParameterNonPrimitive = Operator.operateOnTwoOperands) {

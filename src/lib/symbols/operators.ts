@@ -29,7 +29,9 @@ const operators = {
     decrement: createSymbol('Decrement'),
     negate: createSymbol('Negate'),
     positive: createSymbol('Positive'),
-    not: createSymbol('Not')
+    not: createSymbol('Not'),
+    getProperty: createSymbol('GetProp'),
+    setProperty: createSymbol('SetProp')
 };
 
 export default operators;

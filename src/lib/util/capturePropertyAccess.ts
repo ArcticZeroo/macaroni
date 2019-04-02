@@ -23,12 +23,25 @@ const propertyAccessorTrap = {
     }
 };
 
+const objectCapturePropertyAccess = (obj: any) => new Proxy(obj, propertyAccessorTrap);
+
 const constructorTrap = {
     construct(target, args) {
-        return new Proxy(new target(...args), propertyAccessorTrap);
+        return objectCapturePropertyAccess(new target(...args));
     }
 };
 
-const capturePropertyAccess = (ctor: new (...args: any[]) => any) => new Proxy(ctor, constructorTrap);
+type Constructor = Function | (new (...args: any[]) => any);
+
+const classCapturePropertyAccess = (ctor: Constructor) => new Proxy(ctor, constructorTrap);
+
+function capturePropertyAccess(item: Constructor | object) {
+    if (typeof item === 'function') {
+        // assume constructor...
+        return classCapturePropertyAccess(item);
+    }
+
+    return objectCapturePropertyAccess(item);
+}
 
 export default capturePropertyAccess;

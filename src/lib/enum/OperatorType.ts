@@ -3,7 +3,7 @@ enum OperatorType {
     sub,
     mul,
     mod,
-    div, integerDiv,
+    div,
     lessThan, lessEqual,
     greaterThan, greaterEqual,
     equal, notEqual,
@@ -15,15 +15,6 @@ enum OperatorType {
 
     // todo: support the below symbols, which are considered prefixed operations
     increment, decrement,
-    incrementAdd,
-    incrementSub,
-    incrementDivide,
-    incrementPow,
-    incrementLeftShift,
-    incrementRightShift,
-    incrementAnd,
-    incrementXor,
-    incrementOr,
     makeNegative, makePositive,
     absoluteValue,
     invert

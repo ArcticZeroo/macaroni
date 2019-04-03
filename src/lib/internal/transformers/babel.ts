@@ -189,6 +189,9 @@ const visitor = {
 
         const tempVariable = path.scope.generateUidIdentifier('temp');
 
+        // Hoist the variable to the scope without defining it yet
+        path.scope.push({ id: tempVariable });
+
         const tempAssignment = types.assignmentExpression(
             '=',
             tempVariable,

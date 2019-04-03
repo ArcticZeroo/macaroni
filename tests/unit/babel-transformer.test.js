@@ -1,5 +1,7 @@
 const { expect } = require('chai');
 const transformCode = require('../helper/babel');
+const runDynamicTests = require('../helper/dynamicTestRunner');
+const { operators } = require('../../dist');
 
 function expectNoTransformation(source) {
    // The second call to transform without plugins is done because sometimes babel strips "useless"
@@ -49,6 +51,10 @@ function binaryExpressionTests(symbol, methodName) {
             expectSpecificTransformation(`a ${symbol} cat.b`, `Operator.${methodName}(a, cat.b);`);
             expectSpecificTransformation(`cat.a ${symbol} cat.b`, `Operator.${methodName}(cat.a, cat.b);`);
          });
+
+         it('does transform when variables are identifiers in nested expressions', function () {
+            expectAnyTransformation(`a ${symbol} (b ${symbol} c ${symbol} (d ${symbol} e ${symbol} f) ${symbol} g) + h`);
+         });
       });
    });
 }
@@ -70,6 +76,16 @@ function assignmentExpressionTests(symbol, methodName) {
 }
 
 function updateExpressionTests(symbol, methodName) {
+   const Operator = {
+      decrement(a) {
+         return a - 1;
+      },
+
+      increment(a) {
+         return a + 1;
+      }
+   };
+
    describe(`${symbol}a [prefix ${methodName}]`, function () {
       it('transforms when on its own', function () {
          expectSpecificTransformation(`${symbol}a`, `a = Operator.${methodName}(a);`);
@@ -78,15 +94,34 @@ function updateExpressionTests(symbol, methodName) {
       it('transforms when assigning to a value', function () {
          expectSpecificTransformation(`a = ${symbol}b`, `a = b = Operator.${methodName}(b);`);
       });
+
+      it('immediately returns the value after updating it', function () {
+         let a = 5;
+
+         const incrementReturn = eval(transformCode(`${symbol}a`));
+
+         expect(incrementReturn).to.equal(a);
+      });
    });
 
    describe(`a${symbol} [postfix ${methodName}]`, function () {
       it('transforms when on its own', function () {
-         expectSpecificTransformation(`a${symbol}`, `(_temp = a) && ((a = Operator.${methodName}(a)) || _temp) && _temp;`);
+         expectAnyTransformation(`a${symbol}`);
       });
 
       it('transforms when assigning to a value', function () {
-         expectSpecificTransformation(`a = b${symbol}`, `a = (_temp = b) && ((b = Operator.${methodName}(b)) || _temp) && _temp;`);
+         expectAnyTransformation(`a = b${symbol}`);
+      });
+
+      it('returns the value before updating it, but updates it in the same expression', function () {
+         let a = 5;
+
+         const initialValue = a;
+
+         const incrementReturn = eval(transformCode(`a${symbol}`));
+
+         expect(incrementReturn).to.equal(initialValue);
+         expect(a).to.equal(Operator[methodName](initialValue));
       });
    });
 }
@@ -100,6 +135,11 @@ function unaryExpressionTests(symbol, methodName) {
          expectNoTransformation(`${symbol}'cat'`);
          expectAnyTransformation(`${symbol}a`);
          expectAnyTransformation(`${symbol}cat.a`);
+      });
+
+      it('transforms identifiers and member expressions properly', function () {
+         expectSpecificTransformation(`${symbol}a`, `Operator.${methodName}(a);`);
+         expectSpecificTransformation(`${symbol}cat.a`, `Operator.${methodName}(cat.a);`);
       });
    });
 }
@@ -142,18 +182,12 @@ const unaryOperatorTestCaseData = [
    ['!', 'not']
 ];
 
-function runOperatorTests(test, tests) {
-   for (const [symbol, methodName] of tests) {
-      test(symbol, methodName);
-   }
-}
-
 describe('babel transformer', function () {
-   describe('Binary Expressions', () => runOperatorTests(binaryExpressionTests, binaryOperatorTestCaseData));
+   describe('Binary Expressions', () => runDynamicTests(binaryExpressionTests, binaryOperatorTestCaseData));
 
-   describe('Assignment Expressions', () => runOperatorTests(assignmentExpressionTests, assignmentOperatorTestCaseData));
+   describe('Assignment Expressions', () => runDynamicTests(assignmentExpressionTests, assignmentOperatorTestCaseData));
 
-   describe('Unary Expressions', () => runOperatorTests(unaryExpressionTests, unaryOperatorTestCaseData));
+   describe('Unary Expressions', () => runDynamicTests(unaryExpressionTests, unaryOperatorTestCaseData));
 
-   describe('Update Expressions', () => runOperatorTests(updateExpressionTests, updateOperatorTestCaseData));
+   describe('Update Expressions', () => runDynamicTests(updateExpressionTests, updateOperatorTestCaseData));
 });

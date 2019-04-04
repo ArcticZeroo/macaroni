@@ -5,17 +5,17 @@ const propertyAccessorTrap = {
         const overloaded = target[operators.getProperty];
 
         if (overloaded) {
-            return overloaded(prop);
+            return overloaded.apply(target, [prop]);
         }
 
         return target[prop];
     },
 
     set<T>(target: T, prop: keyof T, value: T[keyof T]): boolean {
-        const overloaded = target[operators.setProperty];
+        const overloaded: Function | undefined = target[operators.setProperty];
 
         if (overloaded) {
-            return overloaded(prop, value);
+            return overloaded.apply(target, [prop, value]);
         }
 
         target[prop] = value;

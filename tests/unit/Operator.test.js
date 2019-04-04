@@ -22,20 +22,34 @@ function twoOperandTests(name, operator) {
       });
 
       it(`uses the overloaded method when the first parameter is a class with the method`, function () {
-         const addSymbol = Symbol();
+         const overloadSymbol = Symbol(name);
 
          const testObj = {
             [operator]() {
-               return addSymbol;
+               return overloadSymbol;
             }
          };
 
-         expect(operatorMethod(testObj, 3)).to.equal(addSymbol);
+         expect(operatorMethod(testObj, 3)).to.equal(overloadSymbol);
       });
 
       it(`throws when the first object is null, or does not have the overload`, function () {
          expect(() => operatorMethod(null, 3)).to.throw(TypeError);
          expect(() => operatorMethod({}, 3)).to.throw(TypeError);
+      });
+
+      it('uses the overloaded method on a primitive, if it has one', function () {
+         const overloadSymbol = Symbol(name);
+
+         Number.prototype[operator] = function () {
+            return overloadSymbol;
+         };
+
+         expect(operatorMethod(2, 3)).to.equal(overloadSymbol);
+
+         delete Number.prototype[operator];
+
+         expect(operatorMethod(2, 3)).to.equal(primitiveMethod(2, 3));
       });
    });
 }

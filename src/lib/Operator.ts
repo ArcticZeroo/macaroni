@@ -121,6 +121,14 @@ export default abstract class Operator {
         throw new TypeError(`No such operator '${operatorDisplays[operator] || '?<unknown>'}' exists for type`)
     }
 
+    private static hasOverload(a: any, operator: symbol): boolean {
+        return !!a[operator];
+    }
+
+    private static shouldUsePrimitiveMethod(a: any, operator: symbol): boolean {
+        return Operator.isPrimitive(a) && !Operator.hasOverload(a, operator);
+    }
+
     private static assertOverloadExists(a: any, operator: symbol) {
         const overload: Function | undefined = a[operator];
 
@@ -147,7 +155,7 @@ export default abstract class Operator {
         Operator.verifyNotNull(a);
         Operator.verifyNotNull(b);
 
-        if (Operator.isPrimitive(a)) {
+        if (Operator.shouldUsePrimitiveMethod(a, operator)) {
             return Operator.primitiveMethods[operator](a, b); // will use b's [Symbol.toPrimitive] if available
         }
 
@@ -157,7 +165,7 @@ export default abstract class Operator {
     private static defaultOperateOneOperand(a: any, operator: symbol, nonPrimitiveMethod: OneParameterNonPrimitive = Operator.operateOnOneOperand) {
         Operator.verifyNotNull(a);
 
-        if (Operator.isPrimitive(a)) {
+        if (Operator.shouldUsePrimitiveMethod(a, operator)) {
             return Operator.primitiveMethods[operator](a);
         }
 

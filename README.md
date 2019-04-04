@@ -2,6 +2,8 @@
 
 Operator overloading for javascript!
 
+![he is angry that you aren't using operator overloading in JS yet!](macaroni.png)
+
 ## Example
 
 ```typescript
@@ -52,7 +54,7 @@ You can also pass `skipImport: true` to not import anything when parsing with ba
 - Type hinting is currently unsolved
 - Requires a 3rd-party transformer unless you use `Operator` directly, which would be pretty weird
 - Impossible to override behavior in engine classes such as `Set`, `Map` -- an "override" class is necessary for such behavior.
-- `3 + instance` is not defined behavior at the current time
+- `3 + instance` is not defined behavior at the current time, it currently relies on you to implement `[Symbol.toPrimitive]` 
 - Requires symbol polyfill if being used in a browser context
 
 ## Supported Operators
@@ -99,6 +101,7 @@ Some notes:
 - As mentioned above, you should probably return a bool in your setProperty trap if you don't want errors in strict mode (must return true for no error)
 - This will probably significantly decrease performance for classes expecting a lot of property accesses/sets, please check benchmarks for ES6 proxies.
 - set and get traps are both registered and will be called if they ever exist, so you may dynamically add/remove the overloads if you so wish (similarly to regular classes and such).
+- If you only use get/set behavior, babel is not needed (it uses an ES6 Proxy only, which does not require )
 
 ### Usage
 
@@ -119,13 +122,26 @@ export default capturePropertyAccess(TrapClassExport);
 // method 2 (no change in functionality of course)
 export default capturePropertyAccess(class TrapClassWrap {
    [operators.getProperty](prop) {
-         // ...  
-      }
+      // ...  
+   }
 });
 
+// Can be used on objects...
 const trapObject = capturePropertyAccess({
-                                                  [operators.getProperty](prop) {
-                                                     // ...
-                                                  }
-                                               });
+                      [operators.getProperty](prop) {
+                         // ...
+                      }
+                   });
+
+// ...or instantiated classes
+const trapInstance = capturePropertyAccess(new TrapClass());
 ```
+
+## Future Roadmap
+
+- Manual hash table implementation
+    - Necessary for OperatorMap, OperatorSet, OperatorArray
+    - Should come with `operators.hash`
+- Better TypeScript support
+- Decorators for get/set traps (instead of the kind of messy capturePropertyAccess method)
+

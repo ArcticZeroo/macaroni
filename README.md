@@ -35,19 +35,9 @@ console.log(manualAddition.prop); // I think you can figure this one out
 
 ## Usage
 
-1. Install babel and macaroni
-2. Add macaroni as a babel plugin, either by doing `macaroni` or `macaroni/babel-plugin` (babel normalizes plugin names)
-3. By default, this plugin uses ES6 module syntax (the 'import' keyword) to import dependencies automatically. If you would like to use require, add an option `importType` with value `require` (the value `import` can also be explicitly set) like so:
-
-```typescript
-{
-    plugins: [
-        ['macaroni', { importType: 'require' }]
-    ]
-}
-``` 
-
-You can also pass `skipImport: true` to not import anything when parsing with babel, if you plan to use this in a browser type setting or something, idunno. It was added for unit testing but I'm sure it has some use.
+1. Install macaroni
+2. Install your plugin of choice to transform the code into macaroni-able code (e.g. [babel-plugin-macaroni](https://github.com/arcticzeroo/babel-plugin-macaroni))
+3. Run it!
 
 ## Caveats
 

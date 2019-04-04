@@ -122,13 +122,13 @@ export default abstract class Operator {
     }
 
     private static assertOverloadExists(a: any, operator: symbol) {
-        const overload = a[operator];
+        const overload: Function | undefined = a[operator];
 
         if (!overload) {
             Operator.throwNoOverload(operator);
         }
 
-        return overload;
+        return overload.bind(a);
     }
 
     private static operateOnTwoOperands(a: any, b: any, operator: symbol): any {

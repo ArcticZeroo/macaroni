@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const transformCode = require('../helper/babel');
 const runDynamicTests = require('../helper/dynamicTestRunner');
-const { operators } = require('../../dist');
+const { operators, Operator } = require('../../dist');
 
 function expectNoTransformation(source) {
    // The second call to transform without plugins is done because sometimes babel strips "useless"
@@ -19,7 +19,7 @@ function expectAnyTransformation(source) {
    expect(transformCode(source)).to.not.equal(transformCode(source, true));
 }
 
-function binaryExpressionTests(symbol, methodName) {
+function binaryExpressionTests(symbol, methodName, operator) {
    describe(`a ${symbol} b [${methodName}]`, function () {
       describe(`numeric literal ${symbol} other`, function () {
          it('does not perform any transformations when other is a numeric literal', function () {
@@ -56,10 +56,66 @@ function binaryExpressionTests(symbol, methodName) {
             expectAnyTransformation(`a ${symbol} (b ${symbol} c ${symbol} (d ${symbol} e ${symbol} f) ${symbol} g) + h`);
          });
       });
+
+      if (operator) {
+         describe('operation results', function () {
+            it(`can '${methodName}' two class instances of the same type`, function () {
+               class Overloaded {
+                  constructor(value) {
+                     this.value = value;
+                  }
+
+                  [operator](other) {
+                     expect(other).to.be.an.instanceOf(Overloaded);
+
+                     return new Overloaded(Operator.primitiveMethods[operator](this.value, other.value));
+                  }
+               }
+
+               const a = new Overloaded(5);
+               const b = new Overloaded(3);
+
+               const transformedCode = transformCode(`a ${symbol} b`);
+               const result = eval(transformedCode);
+
+               expect(result).to.be.an.instanceOf(Overloaded);
+               expect(result.value).to.equal(Operator.primitiveMethods[operator](a.value, b.value));
+            });
+
+            it(`can '${methodName}' two class instances of different types!`, function () {
+               class OverloadedA {
+                  constructor(value) {
+                     this.value = value;
+                  }
+
+                  [operator](other) {
+                     expect(other).to.be.an.instanceOf(OverloadedB);
+
+                     return new OverloadedB(Operator.primitiveMethods[operator](this.value, other.myReallyCoolValue));
+                  }
+               }
+
+               class OverloadedB {
+                  constructor(value) {
+                     this.myReallyCoolValue = value;
+                  }
+               }
+
+               const a = new OverloadedA(5);
+               const b = new OverloadedB(3);
+
+               const transformedCode = transformCode(`a ${symbol} b`);
+               const result = eval(transformedCode);
+
+               expect(result).to.be.an.instanceOf(OverloadedB);
+               expect(result.myReallyCoolValue).to.equal(Operator.primitiveMethods[operator](a.value, b.myReallyCoolValue));
+            });
+         });
+      }
    });
 }
 
-function assignmentExpressionTests(symbol, methodName) {
+function assignmentExpressionTests(symbol, methodName, operator) {
    describe(`a ${symbol}= b [${methodName}]`, function () {
       it(`transforms when performing ${methodName} on a numeric literal to an identifier`, function () {
          expectSpecificTransformation(`a ${symbol}= 2`, `a = Operator.${methodName}(a, 2);`);
@@ -72,6 +128,31 @@ function assignmentExpressionTests(symbol, methodName) {
       it(`transforms when performing ${methodName} on a binary expression of an identifier to an identifier`, function () {
          expectSpecificTransformation(`a ${symbol}= (b ${symbol} 5)`, `a = Operator.${methodName}(a, Operator.${methodName}(b, 5));`);
       });
+
+      if (operator) {
+         describe('operation results', function () {
+            it(`can run ${symbol}= a class to a number`, function () {
+               class Overloaded {
+                  constructor(value) {
+                     this.value = value;
+                  }
+
+                  [operator](other) {
+                     return new Overloaded(Operator.primitiveMethods[operator](this.value, other));
+                  }
+               }
+
+               const initialValue = 5;
+               let a = new Overloaded(initialValue);
+
+               const transformedCode = transformCode(`a ${symbol}= 3`);
+               const result = eval(transformedCode);
+
+               expect(a).to.equal(result);
+               expect(a.value).to.equal(Operator.primitiveMethods[operator](initialValue, 3));
+            });
+         });
+      }
    });
 }
 
@@ -145,17 +226,17 @@ function unaryExpressionTests(symbol, methodName) {
 }
 
 const assignmentOperatorTestCaseData = [
-   ['+', 'add'],
-   ['-', 'subtract'],
-   ['*', 'multiply'],
-   ['%', 'mod'],
-   ['/', 'divide'],
-   ['**', 'pow'],
-   ['&', 'logicalAnd'],
-   ['|', 'logicalOr'],
-   ['^', 'logicalXor'],
-   ['<<', 'leftShift'],
-   ['>>', 'rightShift']
+   ['+', 'add', operators.add],
+   ['-', 'subtract', operators.subtract],
+   ['*', 'multiply', operators.multiply],
+   ['%', 'mod', operators.mod],
+   ['/', 'divide', operators.divide],
+   ['**', 'pow', operators.pow],
+   ['&', 'logicalAnd', operators.logicalAnd],
+   ['|', 'logicalOr', operators.logicalOr],
+   ['^', 'logicalXor', operators.logicalXor],
+   ['<<', 'leftShift', operators.leftShift],
+   ['>>', 'rightShift', operators.rightShift]
 ];
 
 const binaryOperatorTestCaseData = [
